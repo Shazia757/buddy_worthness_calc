@@ -1,6 +1,8 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:buddy_worthness_calc/image_picker.dart';
 import 'package:flutter/material.dart';
+// import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lottie/lottie.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
@@ -71,7 +73,25 @@ class _MyHomePageState extends State<MyHomePage> {
       _currentTypedLine = 0;
     });
 
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 1));
+
+    bool isHuman = false;
+    if (_pickedImage != null) {
+      try {
+        isHuman = true;
+      } catch (e) {
+        log(e.toString());
+      }
+    }
+
+    if (!isHuman) {
+      setState(() {
+        _isGenerating = false;
+        _statusText = "❌ No human detected in the image.";
+      });
+      return;
+    }
+
     setState(() {
       _statusText = "🧠 Calculating body part values...";
     });
@@ -82,15 +102,45 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     await Future.delayed(const Duration(seconds: 2));
+
+    final List<MapEntry<String, String>> allEntries = [
+      MapEntry('Left Kidney', '₹96,420'),
+      MapEntry('Right Kidney', '₹95,000'),
+      MapEntry('Left Lung', '₹75,000 (with 30% pollution tax)'),
+      MapEntry('Right Eye', '₹27,000'),
+      MapEntry('Left Eye', '₹25,000 (slightly blurry)'),
+      MapEntry('Liver', '₹1,10,000 (marinated)'),
+      MapEntry('Heart', '₹1,50,000 (with feelings)'),
+      MapEntry('Brain', '₹5 (lightly used)'),
+      MapEntry('Brain (Unused)', '₹2,00,000 (rare find)'),
+      MapEntry('Spinal Cord', '₹60,000 (includes free backbone)'),
+      MapEntry('Sense of Humor', '₹₹₹ Off the charts 😂'),
+      MapEntry('Left Thumb', '₹2,500 (used for scrolling)'),
+      MapEntry('Smile', 'Priceless 😄'),
+      MapEntry('Tears', '₹15 per drop (wholesale available)'),
+      MapEntry('Eyebrows', '₹1,000 per brow (shaped)'),
+      MapEntry('Nose', '₹12,000 (has smell memory)'),
+      MapEntry('Ego', '₹99,999 (non-refundable)'),
+      MapEntry('Common Sense', 'Out of stock ❌'),
+      MapEntry('Hair', '₹300 per strand (premium quality)'),
+      MapEntry('Socks Smell', '₹-500 (we’ll pay to take it)'),
+      MapEntry('Left Ear', '₹9,000 (includes gossip filter)'),
+      MapEntry('Patience', '₹0 (expired)'),
+      MapEntry('Sarcasm Level', '999+'),
+      MapEntry('Sleep Debt', '₹75,000 (EMI applicable)'),
+      MapEntry('WiFi Absorption', '₹18,000 (5G compatible)'),
+      MapEntry('Screen Time Eyes', '₹5,000 (pixelated)'),
+      MapEntry('Snack Storage Capacity', '₹7,500'),
+      MapEntry('Confidence', '₹1,00,000 (self-generated)'),
+      MapEntry('Stomach', '₹40,000 (curry-compatible)'),
+      MapEntry('Inner Peace', 'Lost in 2018 ❌'),
+      MapEntry('Laugh Track', 'Free with every giggle 😆'),
+    ];
+
+    allEntries.shuffle();
     setState(() {
       _isGenerating = false;
-      _fakeReport = {
-        'Left Kidney': '₹87,000',
-        'Right Eye': '₹25,000',
-        'Brain (Used)': '₹8.50',
-        'Heart': '₹1,20,000',
-        'Smile': 'Priceless 😄',
-      };
+      _fakeReport = Map.fromEntries(allEntries.take(5));
       _reportLines.addAll(_fakeReport!.entries);
       _currentTypedLine = 0;
     });
@@ -191,9 +241,51 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
         backgroundColor: Colors.black,
-        foregroundColor: Colors.greenAccent,
+        elevation: 4,
+        centerTitle: true,
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            'Buddy Worthness Calculator',
+            style: TextStyle(
+              fontSize: 18,
+              fontFamily: 'Courier',
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.0,
+              foreground: Paint()
+                ..shader = const LinearGradient(
+                  colors: [Colors.greenAccent, Colors.lightGreenAccent],
+                ).createShader(const Rect.fromLTWH(0.0, 0.0, 300.0, 70.0)),
+            ),
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline, color: Colors.greenAccent),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  backgroundColor: Colors.black87,
+                  title: const Text("About App",
+                      style: TextStyle(color: Colors.greenAccent)),
+                  content: const Text(
+                    "This app calculates the worth of your body parts, just for fun! 😂",
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("Close",
+                          style: TextStyle(color: Colors.greenAccent)),
+                    )
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Stack(
         children: [
